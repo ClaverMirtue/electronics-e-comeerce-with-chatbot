@@ -1,0 +1,144 @@
+{% extends 'myapp/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Checkout - Electronics Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2 class="mb-4">Checkout</h2>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Shipping Information</h4>
+                <form method="post" action="{% url 'place_order' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="full_name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.get_full_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" value="{{ user.userprofile.phone_number }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="2" required>{{ user.userprofile.address }}</textarea>
+                        </div>
+                    </div>
+
+                    <h4 class="card-title mb-4 mt-4">Payment Method</h4>
+                    <div class="mb-4">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="jazzcash" value="jazzcash" required>
+                            <label class="form-check-label" for="jazzcash">
+                                JazzCash
+                            </label>
+                            <div id="jazzcash_details" class="mt-2" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="jazzcash_number" class="form-label">JazzCash Account Number</label>
+                                    <input type="tel" class="form-control" id="jazzcash_number" name="jazzcash_number">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="payment_screenshot" class="form-label">Payment Screenshot</label>
+                                    <input type="file" class="form-control" id="payment_screenshot" name="payment_screenshot" accept="image/*">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" required>
+                            <label class="form-check-label" for="cod">
+                                Cash on Delivery
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-lock"></i> Place Order
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Order Summary</h4>
+                {% for item in cart_items %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                    <span>₹{{ item.product.price|multiply:item.quantity }}</span>
+                </div>
+                {% endfor %}
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Subtotal</strong>
+                    <strong>₹{{ total }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Shipping</span>
+                    <span>Free</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total</strong>
+                    <strong>₹{{ total }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jazzcashRadio = document.getElementById('jazzcash');
+    const jazzcashDetails = document.getElementById('jazzcash_details');
+    const jazzcashNumber = document.getElementById('jazzcash_number');
+    const paymentScreenshot = document.getElementById('payment_screenshot');
+
+    jazzcashRadio.addEventListener('change', function() {
+        if (this.checked) {
+            jazzcashDetails.style.display = 'block';
+            jazzcashNumber.required = true;
+            paymentScreenshot.required = true;
+        } else {
+            jazzcashDetails.style.display = 'none';
+            jazzcashNumber.required = false;
+            paymentScreenshot.required = false;
+        }
+    });
+});
+</script>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-check {
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-check:hover {
+    background-color: #f8f9fa;
+}
+
+#jazzcash_details {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock %} 

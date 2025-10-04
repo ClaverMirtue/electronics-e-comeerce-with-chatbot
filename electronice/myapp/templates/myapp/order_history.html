@@ -1,0 +1,128 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}Order History - Electronics Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-5 animate-on-scroll">Order History</h2>
+
+    {% if orders %}
+    <div class="row">
+        {% for order in orders %}
+        <div class="col-12 mb-4 animate-on-scroll">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0">Order #{{ order.id }}</h5>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="badge {% if order.status == 'delivered' %}bg-success{% elif order.status == 'shipped' %}bg-info{% elif order.status == 'processing' %}bg-warning{% elif order.status == 'cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ order.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Order Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+                            <p><strong>Total Amount:</strong> ${{ order.total_amount }}</p>
+                            <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Order Items:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in order.orderitem_set.all %}
+                                        <tr>
+                                            <td>{{ item.product.name }}</td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>₹{{ item.price }}</td>
+                                            <td>₹{{ item.total_price }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">Last Updated: {{ order.updated_at|date:"F d, Y H:i" }}</small>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <a href="{% url 'order_confirmation' order.id %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 animate-on-scroll">
+        <i class="fas fa-shopping-bag fa-3x mb-3 text-muted"></i>
+        <h4>No Orders Found</h4>
+        <p class="text-muted">You haven't placed any orders yet.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary mt-3">
+            <i class="fas fa-shopping-cart"></i> Start Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .card-header {
+        background-color: var(--primary-color) !important;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5em 1em;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        border-top: none;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+    }
+</style>
+{% endblock %} 

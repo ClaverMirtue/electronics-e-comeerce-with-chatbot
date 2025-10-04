@@ -1,0 +1,271 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}{{ product.name }} - Electronics Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'products' %}" class="text-decoration-none">Products</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'category_products' product.category.id %}" class="text-decoration-none">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="product-image-container mb-3">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="img-fluid main-image" alt="{{ product.name }}" id="mainImage">
+                        {% endif %}
+                    </div>
+                    <div class="thumbnail-container d-flex gap-2">
+                        {% if product.image %}
+                        <div class="thumbnail active" onclick="changeImage(this, '{{ product.image.url }}')">
+                            <img src="{{ product.image.url }}" class="img-thumbnail" alt="Thumbnail">
+                        </div>
+                        {% endif %}
+                        <!-- Add more thumbnails if you have multiple product images -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h1 class="h2 mb-3">{{ product.name }}</h1>
+                    
+                    <!-- Price and Stock -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="h3 text-primary mb-0">₹{{ product.price }}</h2>
+                            <span class="badge {% if product.stock > 10 %}bg-success{% elif product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                {% if product.stock > 10 %}
+                                    In Stock
+                                {% elif product.stock > 0 %}
+                                    Only {{ product.stock }} left
+                                {% else %}
+                                    Out of Stock
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="text-muted">
+                            <small>Category: {{ product.category.name }}</small>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <p class="text-muted">{{ product.description }}</p>
+                    </div>
+
+                    <!-- Add to Cart -->
+                    <div class="mb-4">
+                        {% if product.stock > 0 %}
+                        <form method="POST" action="{% url 'add_to_cart' product.id %}" class="d-flex gap-2">
+                            {% csrf_token %}
+                            <div class="input-group" style="width: 150px;">
+                                <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity()">-</button>
+                                <input type="number" class="form-control text-center" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                                <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity()">+</button>
+                            </div>
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-secondary w-100" disabled>
+                            <i class="fas fa-times-circle me-2"></i>Out of Stock
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Product Features -->
+                    <div class="mb-4">
+                        <h5>Key Features</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>High-quality materials</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Warranty included</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Fast delivery</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>24/7 support</li>
+                        </ul>
+                    </div>
+
+                    <!-- Share -->
+                    <div class="share-buttons">
+                        <h5>Share this product</h5>
+                        <div class="d-flex gap-2">
+                            <a href="#" class="btn btn-outline-primary"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="btn btn-outline-info"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="btn btn-outline-danger"><i class="fab fa-pinterest"></i></a>
+                            <a href="#" class="btn btn-outline-success"><i class="fab fa-whatsapp"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="related-products mt-5">
+        <h3 class="mb-4">Related Products</h3>
+        <div class="row">
+            {% for related_product in related_products %}
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 border-0 shadow-sm product-card">
+                    <div class="position-relative">
+                        {% if related_product.image %}
+                        <img src="{{ related_product.image.url }}" class="card-img-top" alt="{{ related_product.name }}" style="height: 200px; object-fit: contain; padding: 1rem;">
+                        {% endif %}
+                        <div class="position-absolute top-0 end-0 p-2">
+                            <span class="badge {% if related_product.stock > 10 %}bg-success{% elif related_product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                {% if related_product.stock > 10 %}
+                                    In Stock
+                                {% elif related_product.stock > 0 %}
+                                    Only {{ related_product.stock }} left
+                                {% else %}
+                                    Out of Stock
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ related_product.name }}</h5>
+                        <p class="card-text text-muted">{{ related_product.description|truncatewords:10 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 mb-0">₹{{ related_product.price }}</span>
+                            <div class="btn-group">
+                                <a href="{% url 'product_detail' related_product.id %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if related_product.stock > 0 %}
+                                <a href="{% url 'add_to_cart' related_product.id %}" class="btn btn-primary">
+                                    <i class="fas fa-cart-plus"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.product-image-container {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.main-image {
+    max-height: 400px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.main-image:hover {
+    transform: scale(1.05);
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.thumbnail.active {
+    border-color: var(--secondary-color);
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbnail:hover {
+    transform: translateY(-2px);
+}
+
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item a {
+    color: var(--secondary-color);
+}
+
+.breadcrumb-item.active {
+    color: var(--primary-color);
+}
+
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.btn-group .btn {
+    padding: 0.5rem 1rem;
+}
+
+.share-buttons .btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.input-group .btn {
+    width: 40px;
+}
+</style>
+
+<script>
+function changeImage(element, imageUrl) {
+    document.getElementById('mainImage').src = imageUrl;
+    document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
+    element.classList.add('active');
+}
+
+function incrementQuantity() {
+    const input = document.getElementById('quantity');
+    const max = parseInt(input.getAttribute('max'));
+    const currentValue = parseInt(input.value);
+    if (currentValue < max) {
+        input.value = currentValue + 1;
+    }
+}
+
+function decrementQuantity() {
+    const input = document.getElementById('quantity');
+    const currentValue = parseInt(input.value);
+    if (currentValue > 1) {
+        input.value = currentValue - 1;
+    }
+}
+</script>
+{% endblock %} 
